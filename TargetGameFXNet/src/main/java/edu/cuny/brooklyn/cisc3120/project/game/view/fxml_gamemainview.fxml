@@ -46,7 +46,7 @@
               <MenuItem accelerator="Alt+Shift+N" mnemonicParsing="false" onAction="#newGame" text="%menuItemFileNewGame" />
               <MenuItem accelerator="Alt+Shift+O" mnemonicParsing="false" onAction="#openGame" text="%menuItemFileOpenGame" />
               <SeparatorMenuItem />
-              <MenuItem accelerator="Alt+Shift+S" mnemonicParsing="false" onAction="#saveTheGame" text="%menuItemFileSaveGame" />
+              <MenuItem fx:id="menuItemFileSaveGame" accelerator="Alt+Shift+S" mnemonicParsing="false" onAction="#saveTheGame" text="%menuItemFileSaveGame" />
               <SeparatorMenuItem />
               <MenuItem mnemonicParsing="false" onAction="#exitGame" text="%menuItemFileExit" />
             </items>

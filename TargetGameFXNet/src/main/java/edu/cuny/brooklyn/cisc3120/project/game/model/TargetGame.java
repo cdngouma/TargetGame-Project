@@ -3,7 +3,9 @@ package edu.cuny.brooklyn.cisc3120.project.game.model;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Random;
+import java.util.Scanner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,7 @@ public class TargetGame {
     private Target target;
     private GameBoard gameBoard;
     private Random rng;
+    private Scanner in;
     
     private GameStatistics gameStatistics;
 
@@ -41,10 +44,38 @@ public class TargetGame {
     }
 
     public void saveTheGame() throws FileNotFoundException, IOException {
-        // TODO Auto-generated method stub
-        
+    	try (PrintWriter printWriter = new PrintWriter(theGameFile)) {
+            printWriter.format("%d,%d,%d,%d,%d",
+            		gameStatistics.getNumOfTargetsMade(),
+            		gameStatistics.getNumOfShotsFired(),
+            		gameStatistics.getNumOfTargetsShot(),
+            		gameStatistics.getNumOfRoundsPlayed(),
+            		gameStatistics.getNumOfRoundsWon());
+         }       
     }
-
+    
+    public void openSavedGame() {
+    	try {
+        	in = new Scanner(theGameFile);
+        	in.useDelimiter("(\\p{javaWhitespace}|,)+");
+        	
+        	while(in.hasNextLine()) {
+        		gameStatistics.setNumOfTargetsMade(Integer.parseInt(in.next()));
+        		gameStatistics.setNumOfShotsFired(Integer.parseInt(in.next()));
+        		gameStatistics.setNumOfTargetsShot(Integer.parseInt(in.next()));
+        		gameStatistics.setNumOfRoundsPlayed(Integer.parseInt(in.next()));
+        		gameStatistics.setNumOfRoundsWon(Integer.parseInt(in.next()));
+        		gameStatistics.updateAccuracy();
+        	}
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    public void setTheGameFile(File theGameFile) {
+    	this.theGameFile = theGameFile;
+    }
+    
     public File getTheGameFile() {
         return theGameFile;
     }

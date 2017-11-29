@@ -1,5 +1,6 @@
 package edu.cuny.brooklyn.cisc3120.project.game.controller;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -32,6 +33,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -39,7 +41,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
@@ -75,6 +79,12 @@ public class GameController {
     @FXML
     private VBox playersOnLineVbox;
     
+    @FXML
+    MenuItem menuItemFileSaveGame;
+    
+    @FXML
+    MenuItem menuItemFileOpenGame;
+    
     private TargetGame targetGame = new TargetGame();
     
     private Stage stage;
@@ -96,6 +106,7 @@ public class GameController {
         initializeI18n();
         gameStatTableView.setVisible(false);
         playersOnLineVbox.setVisible(false);
+        menuItemFileSaveGame.setDisable(true);
         statusBroadCaster = new StatusBroadcaster();
         statusBroadCaster.start();
     }
@@ -117,6 +128,12 @@ public class GameController {
 
     @FXML
     void newGame(ActionEvent event) {
+    	startNewGame();
+    }
+    
+    private void startNewGame() {
+    	clearTargetPane();
+		
         LOGGER.debug("started new game.");
         lcComboBox.setDisable(true); // don't allow users to change locale when a game is in session
         addTarget(targetGame, targetCanvas);
@@ -128,16 +145,70 @@ public class GameController {
         gameStatTableView.getColumns().set(0,  tableViewStatName);
         gameStatTableView.getColumns().set(1,  tableViewStatValue);
         playersOnLineVbox.setVisible(true);
-    }
-
-    @FXML
-    void openGame(ActionEvent event) {
-        LOGGER.debug("openning a saved game: not implemented yet");
+        menuItemFileSaveGame.setDisable(false);
     }
 
     @FXML
     void saveTheGame(ActionEvent event) {
-        LOGGER.debug("saving the game: not implemented yet");
+   // 	if(targetGame.isGameStateChanged()) {		// NOTE: this is commented out for testing purpose
+    		try {
+    			saveNewFile();
+    			targetGame.saveTheGame();
+    			LOGGER.debug(String.format("Created new file %s for editing.", 
+    					targetGame.getTheGameFile().getPath()));
+    		}
+    		catch(FileNotFoundException e) {
+                LOGGER.error(String.format("Cannot found the file %s while saving the file."
+                        , targetGame.getTheGameFile().getPath()), e);
+                NotificationHelper.showFileNotFound(targetGame.getTheGameFile().getPath());
+            } catch (IOException e) {
+                LOGGER.error(String.format("Cannot write to the file %s while saving the file."
+                        , targetGame.getTheGameFile().getPath()), e);
+                NotificationHelper.showWritingError(targetGame.getTheGameFile().getPath());
+            }
+    //	}		// NOTE: this is commented out for testing purpose
+    }
+    
+    @FXML
+    void openGame(ActionEvent event) {
+        try {
+   //         if (targetGame.isGameStateChanged()) { 		NOTE: this is commented out for tetsing purpose
+            	UserDecision decision = NotificationHelper.askUserDecision(new DecisionWrapper(UserDecision.CancelPendingAction));
+                switch(decision) {
+                case CancelPendingAction:
+                    break;
+                case DiscardGame:
+                    openFileFromFileSystem();
+                    LOGGER.debug(String.format("Opened file %s for editing.", targetGame.getTheGameFile().getPath()));                                       
+                    startNewGame();
+                    break;
+                case SaveGame:
+                	saveNewFile();
+                    targetGame.saveTheGame();
+                    LOGGER.debug(String.format("Saved the file %s.", targetGame.getTheGameFile().getPath()));                    
+                    openFileFromFileSystem();
+                    LOGGER.debug(String.format("Opened file %s for editing.", targetGame.getTheGameFile().getPath()));                                                           
+                    startNewGame();
+                    break;
+                default:
+                    throw new IllegalArgumentException(String.format(
+                            "User decision's value (%s) is unexpected", decision));
+               }
+    /*          openFileFromFileSystem();	
+                LOGGER.debug(String.format("Opened file %s for editing.", editor.getTheFile().getPath()));                                                                               
+               	startNewGame();
+                }
+            }			NOTE: Commented out for testing purpose
+     */
+        } catch (FileNotFoundException e) {
+            LOGGER.error(String.format("Cannot found the file %s while opening the file."
+                    , targetGame.getTheGameFile().getPath()), e);
+            NotificationHelper.showFileNotFound(targetGame.getTheGameFile().getPath());
+        } catch (IOException e) {
+            LOGGER.error(String.format("Cannot load the file %s while opening the file."
+                    , targetGame.getTheGameFile().getPath()), e);
+            NotificationHelper.showWritingError(targetGame.getTheGameFile().getPath());
+        }
     }
     
     private void exitGame(Event event) {
@@ -154,6 +225,7 @@ public class GameController {
                 break;
             case SaveGame:
                 try {
+                	saveNewFile();
                     targetGame.saveTheGame();
                     LOGGER.debug(String.format("Saved the game at %s.", targetGame.getTheGameFile().getPath()));
                     statusBroadCaster.close();
@@ -219,6 +291,11 @@ public class GameController {
         GraphicsContext gc = targetCanvas.getGraphicsContext2D();
         gc.clearRect(xPos, yPos, cellWidth, cellHeight);
         
+    }
+    
+    private void clearTargetPane() {
+    	GraphicsContext gc = targetCanvas.getGraphicsContext2D();
+    	gc.clearRect(0, 0, targetCanvas.getWidth(), targetCanvas.getHeight());
     }
     
     private void setWeaponDisable(boolean disabled) {
@@ -293,5 +370,30 @@ public class GameController {
         stage.setTitle(I18n.getBundle().getString(TargetGameApp.APP_TITLE_KEY));
         
         LOGGER.debug(targetGame.getTarget() == null? "No target set yet.":targetGame.getTarget().toString());
-    } 
+    }
+    
+    private void saveNewFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(I18n.getBundle().getString("saveFile"));
+        fileChooser.getExtensionFilters().addAll(
+                new ExtensionFilter("Text Files", "*.txt"),
+                new ExtensionFilter("All Files", "*.*"));
+        File theFile = fileChooser.showSaveDialog(stage);
+        if (theFile != null) {
+            targetGame.setTheGameFile(theFile);
+        }
+    }
+    
+    private void openFileFromFileSystem() throws FileNotFoundException, IOException {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open an Text File");
+        fileChooser.getExtensionFilters().addAll(
+                new ExtensionFilter("Text Files", "*.txt"),
+                new ExtensionFilter("All Files", "*.*"));
+        File theFile = fileChooser.showOpenDialog(stage);
+        if (theFile != null) {
+            targetGame.setTheGameFile(theFile);
+            targetGame.openSavedGame();
+        }
+    }
 }

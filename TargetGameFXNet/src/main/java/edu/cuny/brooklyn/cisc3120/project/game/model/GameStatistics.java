@@ -49,6 +49,22 @@ public class GameStatistics {
     public void setNumOfTargetsMade(int numOfTargetsMade) {
         this.numOfTargetsMade = numOfTargetsMade;
     }
+    
+    public void setNumOfRoundsWon(int numOfRoundsWon) {
+    	this.numOfRoundsWon = numOfRoundsWon;
+    }
+    
+    public int getNumOfRoundsWon() {
+    	return numOfRoundsWon;
+    }
+    
+    public void setNumOfRoundsPlayed(int numOfRoundsPlayed) {
+    	this.numOfRoundsPlayed = numOfRoundsPlayed;
+    }
+    
+    public int getNumOfRoundsPlayed() {
+    	return numOfRoundsPlayed;
+    }
 
     public void updateAccuracy() {
         if (numOfShotsFired > 0) {
@@ -110,8 +126,6 @@ public class GameStatistics {
                 name = new SimpleStringProperty(this, COLUMN_NAME_TITLE);
             return name;
         }
-
-
 
         public void setValue(String value) {
             valueProperty().set(value);
