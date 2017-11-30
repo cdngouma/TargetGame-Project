@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
@@ -19,6 +21,7 @@ import edu.cuny.brooklyn.cisc3120.project.game.utils.I18n;
 import edu.cuny.brooklyn.cisc3120.project.game.model.Shot;
 import edu.cuny.brooklyn.cisc3120.project.game.model.DecisionWrapper.UserDecision;
 import edu.cuny.brooklyn.cisc3120.project.game.model.GameStatistics.StatNameValue;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -38,13 +41,17 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.AudioClip;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 
 public class GameController {
@@ -91,6 +98,10 @@ public class GameController {
     
     private StatusBroadcaster statusBroadCaster;
     
+    private final int NUM_BULLET_IMPACT_TYPE = 4;
+    
+    private AudioClip shotSound = new AudioClip(Paths.get("src\\main\\resources\\9mm_Gun_shot.wav").toUri().toString());
+    
     public void setStage(Stage stage) {
         this.stage = stage;
         this.stage.setOnCloseRequest(event -> {
@@ -114,6 +125,7 @@ public class GameController {
     @FXML
     void fireTheWeapon(ActionEvent event) {
         LOGGER.debug("Weapon fired!");
+        shotSound.play();
         int shotX = Integer.parseInt(xAimedAtTextField.getText());
         int shotY = Integer.parseInt(yAimedAtTextField.getText());
         Shot shot = new Shot(shotX, shotY);
@@ -260,9 +272,36 @@ public class GameController {
         GraphicsContext gc = targetCanvas.getGraphicsContext2D();
         gc.setFill(game.getTarget().getColor());
         gc.fillRect(xPos, yPos, cellWidth, cellHeight);
+   //     gc.drawImage(new Image("img/target.png"), xPos, yPos, cellWidth, cellHeight); If we want an image as target
+    }
+    
+    private void clearMissedShot(TargetGame game, Shot shot, Canvas canvas) {
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+        double cellWidth = width / game.getGameBoard().getWidth();
+        double cellHeight = height / game.getGameBoard().getHeight();
+        double xPos = cellWidth * shot.getX();
+        double yPos = cellHeight * shot.getY();
+        GraphicsContext gc = targetCanvas.getGraphicsContext2D();
+        gc.clearRect(xPos, yPos, cellWidth, cellHeight);
+    }
+    
+    private void shoot(TargetGame game, Shot shot, Canvas canvas) {
+    	Random rng = new Random();
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+        double cellWidth = width / game.getGameBoard().getWidth();
+        double cellHeight = height / game.getGameBoard().getHeight();
+        double xPos = cellWidth * shot.getX();
+        double yPos = cellHeight * shot.getY();
+        GraphicsContext gc = targetCanvas.getGraphicsContext2D();
+        gc.drawImage(new Image("img/impact" + (rng.nextInt(NUM_BULLET_IMPACT_TYPE) + 1) +".png"),
+        									xPos, yPos, cellWidth, cellHeight);	// display different impacts
     }
     
     private void processShotAction(TargetGame gameState, Shot shot) {
+    	shoot(targetGame, shot, targetCanvas);
+    	
         if (gameState.getTarget().isTargetShot(shot)) {
             Alert alert = new Alert(AlertType.INFORMATION
                     , I18n.getBundle().getString("uShotTarget"), ButtonType.CLOSE);
@@ -272,11 +311,10 @@ public class GameController {
             clearTarget();
             addTarget(gameState, targetCanvas);
         } else {
-            Alert alert = new Alert(AlertType.INFORMATION
-                    , I18n.getBundle().getString("uMissedTarget"), ButtonType.CLOSE);
-            alert.setTitle(APP_TITLE + ":" + I18n.getBundle().getString("targetMissed"));
-            alert.setHeaderText(I18n.getBundle().getString("lousyShooter"));                
-            alert.showAndWait();
+        	PauseTransition delay = new PauseTransition(Duration.seconds(2));
+            delay.setOnFinished( event -> clearMissedShot(targetGame, shot, targetCanvas));
+            delay.play();
+            // NOTE: We could also leave the bullet impact on the wall;
         }
    }
     
@@ -289,8 +327,7 @@ public class GameController {
         double yPos = cellHeight * targetGame.getTarget().getY();
         
         GraphicsContext gc = targetCanvas.getGraphicsContext2D();
-        gc.clearRect(xPos, yPos, cellWidth, cellHeight);
-        
+        gc.clearRect(xPos, yPos, cellWidth, cellHeight);        
     }
     
     private void clearTargetPane() {

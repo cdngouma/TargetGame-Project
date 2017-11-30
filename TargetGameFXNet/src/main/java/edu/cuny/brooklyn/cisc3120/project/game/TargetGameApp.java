@@ -46,11 +46,12 @@ public class TargetGameApp extends Application
         
         StackPane viewHolder = new StackPane();
         Scene scene = new Scene(viewHolder);
-        scene.getStylesheets().add(MAIN_CSS_FILE);
+  //      scene.getStylesheets().add(MAIN_CSS_FILE);
         viewHolder.getChildren().add(pane);
         
         primaryStage.setTitle(bundle.getString(APP_TITLE_KEY));
         primaryStage.setScene(scene);
+        primaryStage.setMaximized(true);
         primaryStage.show();
     }   
 }

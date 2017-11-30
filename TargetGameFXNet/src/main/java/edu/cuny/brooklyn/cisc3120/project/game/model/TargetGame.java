@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 public class TargetGame {
     private static Logger LOGGER = LoggerFactory.getLogger(TargetGame.class);
     
-    private final static int GAME_TARGET_AREA_WIDTH = 40;
-    private final static int GAME_TARGET_AREA_HEIGHT = 40;
+    private final static int GAME_TARGET_AREA_WIDTH = 15;
+    private final static int GAME_TARGET_AREA_HEIGHT = 15;
     private final static char TARGET_INDICATOR_ON_BOARD = 'X';
     
     private boolean gameStateChanged;
@@ -94,8 +94,10 @@ public class TargetGame {
     }
 
     private Target getRandomTarget() {
-        int x = rng.nextInt(GAME_TARGET_AREA_WIDTH);
-        int y = rng.nextInt(GAME_TARGET_AREA_HEIGHT);
+     /*   int x = rng.nextInt(GAME_TARGET_AREA_WIDTH);
+        int y = rng.nextInt(GAME_TARGET_AREA_HEIGHT);*/
+        int x = 2;
+        int y = 2;
         Target target = new Target(x, y);
         LOGGER.debug("Target: " + x + "," + y);
         return target;

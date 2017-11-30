@@ -20,8 +20,8 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<GridPane hgap="5.0" maxHeight="Infinity" maxWidth="Infinity" vgap="5.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.cuny.brooklyn.cisc3120.project.game.controller.GameController">
-   <rowConstraints>
+<GridPane stylesheets="appmain.css" hgap="5.0" maxHeight="Infinity" maxWidth="Infinity" vgap="5.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.cuny.brooklyn.cisc3120.project.game.controller.GameController">
+  <rowConstraints>
       <RowConstraints minHeight="10.0" />
       <RowConstraints minHeight="10.0" prefHeight="300.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="300.0" />
@@ -35,9 +35,9 @@
       <ColumnConstraints minWidth="150.0" />
    </columnConstraints>
    <children>
-      <StackPane maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: white;" GridPane.columnSpan="4" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
+      <StackPane id="targetField" maxHeight="Infinity" maxWidth="Infinity" GridPane.columnSpan="4" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
          <children>
-            <Canvas fx:id="targetCanvas" height="600.0" width="800.0" />
+            <Canvas fx:id="targetCanvas" height="600" width="600" />
          </children></StackPane>
       <MenuBar GridPane.columnSpan="4" GridPane.hgrow="ALWAYS">
         <menus>
@@ -62,9 +62,9 @@
       <TextField fx:id="yAimedAtTextField" alignment="CENTER_RIGHT" onAction="#fireTheWeapon" promptText="Guess Y" text="0" GridPane.columnIndex="2" GridPane.rowIndex="3" />
       <Button fx:id="fireWeaponButton" mnemonicParsing="false" onAction="#fireTheWeapon" text="Shoot!" GridPane.columnIndex="3" GridPane.rowIndex="3" />
       <ComboBox fx:id="lcComboBox" maxWidth="Infinity" prefWidth="150.0" GridPane.columnIndex="4" />
-      <TableView fx:id="gameStatTableView" maxWidth="Infinity" GridPane.columnIndex="4" GridPane.hgrow="SOMETIMES" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+      <TableView fx:id="gameStatTableView"  GridPane.columnIndex="4" GridPane.hgrow="SOMETIMES" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
         <columns>
-          <TableColumn fx:id="tableViewStatName" editable="false" maxWidth="Infinity" minWidth="200.0" prefWidth="-1.0" text="%statName" />
+          <TableColumn fx:id="tableViewStatName" editable="false" minWidth="200.0" prefWidth="-1.0" text="%statName" />
           <TableColumn fx:id="tableViewStatValue" editable="false" maxWidth="75.0" minWidth="75.0" prefWidth="75.0" text="%statValue" />
         </columns>
          <columnResizePolicy>
