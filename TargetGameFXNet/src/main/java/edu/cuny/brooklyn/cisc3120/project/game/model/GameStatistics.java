@@ -16,7 +16,7 @@ public class GameStatistics {
     private int numOfRoundsWon;
     private int numOfRoundsPlayed;
     private double accuracy;
-    private final int MAX_NUM_ATTEMPTS = 9;
+    private final int MAX_NUM_ATTEMPTS = 6;
     private int numAttempts;
     
     public GameStatistics() {
@@ -45,6 +45,10 @@ public class GameStatistics {
 
     public void setNumOfTargetsShot(int numOfTargetsShot) {
         this.numOfTargetsShot = numOfTargetsShot;
+    }
+    
+    public void setNumOfTargetsShot() {
+        this.numOfTargetsShot++;
     }
 
     public int getNumOfShotsFired() {
@@ -75,12 +79,21 @@ public class GameStatistics {
     	this.numOfRoundsWon = numOfRoundsWon;
     }
     
+    public void setNumOfRoundsWon() {
+    	this.numOfRoundsWon++;
+    }
+    
+    
     public int getNumOfRoundsWon() {
     	return numOfRoundsWon;
     }
     
     public void setNumOfRoundsPlayed(int numOfRoundsPlayed) {
     	this.numOfRoundsPlayed = numOfRoundsPlayed;
+    }
+    
+    public void setNumOfRoundsPlayed() {
+    	this.numOfRoundsPlayed++;
     }
     
     public int getNumOfRoundsPlayed() {
@@ -106,6 +119,10 @@ public class GameStatistics {
     public void resetNumAttempts() {
     	numAttempts = MAX_NUM_ATTEMPTS;
     }
+    
+    public int getNumAttempts() {
+    	return numAttempts;
+    }
 
     public ObservableList<StatNameValue> toObservableList() {
         List<StatNameValue> listStatistics = new LinkedList<StatNameValue>();
@@ -127,6 +144,9 @@ public class GameStatistics {
         listStatistics.add(
                 new StatNameValue(I18n.getBundle().getString("accuracy")
                         , String.format("%5.2f%%", accuracy)));
+        listStatistics.add(
+                new StatNameValue(I18n.getBundle().getString("numOfAttempts")
+                        , Integer.toString(numAttempts)));
         return FXCollections.observableList(listStatistics);
     }
     
