@@ -153,7 +153,7 @@ public class GameController {
     
     private void startNewGame() {
     	clearTargetPane();
-		
+    	targetGame.getGameStatistics().resetStatistics();
         LOGGER.debug("started new game.");
         lcComboBox.setDisable(true); // don't allow users to change locale when a game is in session
         addTarget(targetGame, targetCanvas);
@@ -282,6 +282,7 @@ public class GameController {
         gc.fillRect(xPos, yPos, cellWidth, cellHeight);
    //     gc.drawImage(new Image("img/target.png"), xPos, yPos, cellWidth, cellHeight); If we want an image as target
         game.getGameStatistics().setNumOfTargetsMade();
+        game.getGameStatistics().setNumOfRoundsPlayed();
         gameStatTableView.setItems(targetGame.getGameStatistics().toObservableList());
     }
     
@@ -302,11 +303,13 @@ public class GameController {
     	shoot(targetGame, shot, targetCanvas);
     	
         // Updates stats
+    	targetGame.getGameStatistics().decreementNumAttempts();
         targetGame.getGameStatistics().setNumOfShotsFired();
-        targetGame.getGameStatistics().updateAccuracy();
-    	gameStatTableView.setItems(targetGame.getGameStatistics().toObservableList()); // Updates stats table (view)
+    	gameStatTableView.setItems(targetGame.getGameStatistics().toObservableList()); // Updates statistics table (view)
     	
         if (gameState.getTarget().isTargetShot(shot)) {
+        	targetGame.getGameStatistics().setNumOfTargetsShot();
+        	targetGame.getGameStatistics().setNumOfRoundsWon();
             Alert alert = new Alert(AlertType.INFORMATION
                     , I18n.getBundle().getString("uShotTarget"), ButtonType.CLOSE);
             alert.setTitle(APP_TITLE + ":" + I18n.getBundle().getString("targetShot"));
@@ -314,6 +317,18 @@ public class GameController {
             alert.showAndWait();
             clearTarget();
             clearTargetPane();
+            targetGame.getGameStatistics().updateAccuracy();
+            targetGame.getGameStatistics().resetNumAttempts();
+            addTarget(gameState, targetCanvas);
+        }
+        else if (targetGame.getGameStatistics().getNumAttempts() == 0) {
+        	Alert alert = new Alert(AlertType.INFORMATION
+                    , I18n.getBundle().getString("maxAttemptsExceeded"), ButtonType.CLOSE);
+            alert.setTitle(APP_TITLE + ":" + I18n.getBundle().getString("uMissedTarget"));
+            alert.setHeaderText(I18n.getBundle().getString("gameOver"));
+            alert.showAndWait();
+            clearTargetPane();
+            targetGame.getGameStatistics().resetNumAttempts();
             addTarget(gameState, targetCanvas);
         }
    }
