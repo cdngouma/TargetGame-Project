@@ -16,6 +16,8 @@ public class GameStatistics {
     private int numOfRoundsWon;
     private int numOfRoundsPlayed;
     private double accuracy;
+    private final int MAX_NUM_ATTEMPTS = 9;
+    private int numAttempts;
     
     public GameStatistics() {
         numOfTargetsShot = 0;
@@ -24,6 +26,17 @@ public class GameStatistics {
         numOfRoundsWon = 0;
         numOfRoundsPlayed = 0;
         accuracy = 0;
+        numAttempts = MAX_NUM_ATTEMPTS;
+    }
+    
+    public void resetStatistics() {
+        numOfTargetsShot = 0;
+        numOfShotsFired = 0;
+        numOfTargetsMade = 0;
+        numOfRoundsWon = 0;
+        numOfRoundsPlayed = 0;
+        accuracy = 0;
+        numAttempts = MAX_NUM_ATTEMPTS;
     }
 
     public int getNumOfTargetsShot() {
@@ -41,6 +54,10 @@ public class GameStatistics {
     public void setNumOfShotsFired(int numOfShotsFired) {
         this.numOfShotsFired = numOfShotsFired;
     }
+    
+    public void setNumOfShotsFired() {
+        this.numOfShotsFired++;
+    }
 
     public int getNumOfTargetsMade() {
         return numOfTargetsMade;
@@ -48,6 +65,10 @@ public class GameStatistics {
 
     public void setNumOfTargetsMade(int numOfTargetsMade) {
         this.numOfTargetsMade = numOfTargetsMade;
+    }
+    
+    public void setNumOfTargetsMade() {
+        this.numOfTargetsMade++;
     }
     
     public void setNumOfRoundsWon(int numOfRoundsWon) {
@@ -76,6 +97,14 @@ public class GameStatistics {
     
     public double getAccuracy() {
         return accuracy;
+    }
+    
+    public void decreementNumAttempts() {
+    	numAttempts--;
+    }
+    
+    public void resetNumAttempts() {
+    	numAttempts = MAX_NUM_ATTEMPTS;
     }
 
     public ObservableList<StatNameValue> toObservableList() {

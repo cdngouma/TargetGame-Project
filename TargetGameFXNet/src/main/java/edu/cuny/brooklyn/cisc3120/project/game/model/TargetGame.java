@@ -94,10 +94,10 @@ public class TargetGame {
     }
 
     private Target getRandomTarget() {
-     /*   int x = rng.nextInt(GAME_TARGET_AREA_WIDTH);
-        int y = rng.nextInt(GAME_TARGET_AREA_HEIGHT);*/
-        int x = 2;
-        int y = 2;
+        int x = rng.nextInt(GAME_TARGET_AREA_WIDTH);
+        int y = rng.nextInt(GAME_TARGET_AREA_HEIGHT);
+   //     int x = 2;
+   //     int y = 2; // For testing purpose
         Target target = new Target(x, y);
         LOGGER.debug("Target: " + x + "," + y);
         return target;

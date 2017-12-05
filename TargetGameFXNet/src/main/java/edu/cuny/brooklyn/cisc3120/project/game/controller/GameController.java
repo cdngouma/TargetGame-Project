@@ -21,7 +21,6 @@ import edu.cuny.brooklyn.cisc3120.project.game.utils.I18n;
 import edu.cuny.brooklyn.cisc3120.project.game.model.Shot;
 import edu.cuny.brooklyn.cisc3120.project.game.model.DecisionWrapper.UserDecision;
 import edu.cuny.brooklyn.cisc3120.project.game.model.GameStatistics.StatNameValue;
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -46,12 +45,10 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.AudioClip;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Callback;
-import javafx.util.Duration;
 import javafx.util.StringConverter;
 
 public class GameController {
@@ -128,6 +125,17 @@ public class GameController {
         shotSound.play();
         int shotX = Integer.parseInt(xAimedAtTextField.getText());
         int shotY = Integer.parseInt(yAimedAtTextField.getText());
+        
+        // Forces input to fit limit
+        if(shotX >= targetGame.getGameBoard().getWidth())
+        	shotX = (int) (targetGame.getGameBoard().getWidth() - 1);
+        if(shotX < 0)
+    		shotX = 0;
+        if(shotY >= targetGame.getGameBoard().getHeight())
+    		shotY = (int) (targetGame.getGameBoard().getHeight() - 1);
+        if(shotY < 0)
+    		shotY = 0;
+        
         Shot shot = new Shot(shotX, shotY);
         processShotAction(targetGame, shot);
     }
@@ -273,17 +281,8 @@ public class GameController {
         gc.setFill(game.getTarget().getColor());
         gc.fillRect(xPos, yPos, cellWidth, cellHeight);
    //     gc.drawImage(new Image("img/target.png"), xPos, yPos, cellWidth, cellHeight); If we want an image as target
-    }
-    
-    private void clearMissedShot(TargetGame game, Shot shot, Canvas canvas) {
-        double width = canvas.getWidth();
-        double height = canvas.getHeight();
-        double cellWidth = width / game.getGameBoard().getWidth();
-        double cellHeight = height / game.getGameBoard().getHeight();
-        double xPos = cellWidth * shot.getX();
-        double yPos = cellHeight * shot.getY();
-        GraphicsContext gc = targetCanvas.getGraphicsContext2D();
-        gc.clearRect(xPos, yPos, cellWidth, cellHeight);
+        game.getGameStatistics().setNumOfTargetsMade();
+        gameStatTableView.setItems(targetGame.getGameStatistics().toObservableList());
     }
     
     private void shoot(TargetGame game, Shot shot, Canvas canvas) {
@@ -295,12 +294,17 @@ public class GameController {
         double xPos = cellWidth * shot.getX();
         double yPos = cellHeight * shot.getY();
         GraphicsContext gc = targetCanvas.getGraphicsContext2D();
-        gc.drawImage(new Image("img/impact" + (rng.nextInt(NUM_BULLET_IMPACT_TYPE) + 1) +".png"),
+        gc.drawImage(new Image("img/impact" + (rng.nextInt(NUM_BULLET_IMPACT_TYPE) + 1) + ".png"),
         									xPos, yPos, cellWidth, cellHeight);	// display different impacts
     }
     
     private void processShotAction(TargetGame gameState, Shot shot) {
     	shoot(targetGame, shot, targetCanvas);
+    	
+        // Updates stats
+        targetGame.getGameStatistics().setNumOfShotsFired();
+        targetGame.getGameStatistics().updateAccuracy();
+    	gameStatTableView.setItems(targetGame.getGameStatistics().toObservableList()); // Updates stats table (view)
     	
         if (gameState.getTarget().isTargetShot(shot)) {
             Alert alert = new Alert(AlertType.INFORMATION
@@ -309,12 +313,8 @@ public class GameController {
             alert.setHeaderText(I18n.getBundle().getString("greatShot"));
             alert.showAndWait();
             clearTarget();
+            clearTargetPane();
             addTarget(gameState, targetCanvas);
-        } else {
-        	PauseTransition delay = new PauseTransition(Duration.seconds(2));
-            delay.setOnFinished( event -> clearMissedShot(targetGame, shot, targetCanvas));
-            delay.play();
-            // NOTE: We could also leave the bullet impact on the wall;
         }
    }
     
